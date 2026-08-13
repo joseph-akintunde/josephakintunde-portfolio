@@ -1,0 +1,38 @@
+---
+import Layout from "../layouts/Layout.astro";
+import fs from "node:fs";
+import path from "node:path";
+
+const hasResume = fs.existsSync(path.resolve("public/resume.pdf"));
+---
+
+<Layout title="Resume" description="Download my resume.">
+  <section class="mx-auto max-w-3xl px-6 py-20">
+    <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Resume</h1>
+
+    {hasResume ? (
+      <>
+        <p class="mt-4 text-slate-400">Download a PDF copy of my resume below.</p>
+        <a
+          href="/resume.pdf"
+          download
+          class="mt-8 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-[#0b0d12] transition-opacity hover:opacity-90"
+        >
+          Download Resume (PDF)
+        </a>
+        <div class="mt-10 overflow-hidden rounded-xl border border-white/10">
+          <iframe src="/resume.pdf" class="h-[800px] w-full" title="Resume preview" />
+        </div>
+      </>
+    ) : (
+      <div class="mt-8 rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-slate-400">
+        <p class="font-medium text-slate-200">Resume coming soon.</p>
+        <p class="mt-2 text-sm leading-relaxed">
+          To enable this page, add a file at{" "}
+          <code class="rounded bg-white/10 px-1.5 py-0.5 text-slate-200">public/resume.pdf</code>, and
+          the download button and preview will appear automatically.
+        </p>
+      </div>
+    )}
+  </section>
+</Layout>
