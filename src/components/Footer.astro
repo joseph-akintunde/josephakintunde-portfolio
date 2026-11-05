@@ -3,14 +3,28 @@ import { site } from "../data/site";
 const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-white/10">
-  <div class="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-10 text-sm text-slate-400 sm:flex-row sm:justify-between">
-    <p>&copy; {year} {site.name}. All rights reserved.</p>
-    <div class="flex items-center gap-5">
-      <a href={site.github} class="transition-colors hover:text-white" target="_blank" rel="noreferrer">GitHub</a>
-      <a href={site.linkedin} class="transition-colors hover:text-white" target="_blank" rel="noreferrer">LinkedIn</a>
-      <a href={site.instagram} class="transition-colors hover:text-white" target="_blank" rel="noreferrer">Instagram</a>
-      <a href={`mailto:${site.email}`} class="transition-colors hover:text-white">Email</a>
-    </div>
-  </div>
+<footer class="mx-auto max-w-[680px] px-5 pt-20 pb-12 text-xs text-faint">
+  <p>&copy; {year} {site.name.toLowerCase()}</p>
+  <p id="last-visitor" class="mt-1" hidden>last visitor from <span></span></p>
 </footer>
+
+<script>
+  // "Last visitor from …" (src/pages/api/visit.ts). Stays hidden when there is no previous visitor,
+  // or when no storage is connected.
+  type Place = { city: string; region: string; country: string };
+  const line = document.getElementById("last-visitor");
+  fetch("/api/visit", { method: "POST" })
+    .then((response) => (response.ok ? (response.json() as Promise<{ last: Place | null }>) : null))
+    .then((data) => {
+      const last = data?.last;
+      if (!line || !last?.city) return;
+      // "houston, tx" in the US; "lagos, nigeria" elsewhere.
+      const rest =
+        last.country && last.country !== "US"
+          ? new Intl.DisplayNames(["en"], { type: "region" }).of(last.country)
+          : last.region;
+      line.querySelector("span")!.textContent = [last.city, rest].filter(Boolean).join(", ").toLowerCase();
+      line.hidden = false;
+    })
+    .catch(() => {});
+</script>

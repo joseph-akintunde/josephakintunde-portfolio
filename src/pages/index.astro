@@ -1,116 +1,144 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { site } from "../data/site";
+import { education, experience, incoming, leadership } from "../data/experience";
 import { projects } from "../data/projects";
 
-const featured = projects.filter((p) => p.featured);
+const lower = (s: string) => s.toLowerCase();
+const link = "text-ink underline decoration-faint underline-offset-[3px] transition-colors hover:decoration-ink";
+const item = "relative pl-6 before:absolute before:left-2 before:text-faint before:content-['•']";
+const dates = (start: string, end: string) => ` · ${lower(start)} – ${lower(end)}`;
 ---
 
 <Layout>
-  <section class="mx-auto max-w-5xl px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
-    <p class="mb-4 text-sm font-medium uppercase tracking-widest text-accent">{site.tagline}</p>
-    <h1 class="max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-      {site.heroHeadline}
-    </h1>
-    <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-400">
-      {site.heroSubtext}
-    </p>
-    <div class="mt-10 flex flex-wrap gap-4">
-      <a
-        href="/projects"
-        class="rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-[#0b0d12] transition-opacity hover:opacity-90"
-      >
-        View my work
-      </a>
-      <a
-        href="/contact"
-        class="rounded-lg border border-white/15 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/5"
-      >
-        Get in touch
-      </a>
-    </div>
-  </section>
+  <section id="tldr" class="mx-auto max-w-[680px] px-5 pt-10 lg:pt-28">
+    <h1 class="text-base font-semibold text-ink">{lower(site.name)}</h1>
+    <p class="text-muted">{lower(site.tagline)}</p>
 
-  <section class="border-t border-white/10 bg-white/[0.02]">
-    <div class="mx-auto max-w-5xl px-6 py-16">
-      <h2 class="text-sm font-semibold uppercase tracking-widest text-accent">About</h2>
-      <p class="mt-4 max-w-3xl text-lg leading-relaxed text-slate-300">
-        {site.about}
+    <p class="mt-8">{site.about}</p>
+
+    <h2 id="experience" class="mt-8">Experience:</h2>
+    <ul class="mt-2 space-y-2">
+      {incoming.map((r) => <li class={item}>incoming {lower(r.role)} @{lower(r.org)}</li>)}
+      {experience.map((r) => (
+        <li class={item}>
+          {lower(r.role)} @{lower(r.org)}
+          <span class="text-faint">{dates(r.start, r.end)}</span>
+        </li>
+      ))}
+    </ul>
+
+    <h2 class="mt-8">Education:</h2>
+    <ul class="mt-2">
+      <li class={item}>
+        {lower(education.degree)} @{lower(education.school)}; {lower(education.honors)}, {education.gpa} gpa
+        <span class="text-faint">{dates(education.start, education.end)}</span>
+      </li>
+    </ul>
+
+    <h2 class="mt-8">Leadership:</h2>
+    <ul class="mt-2 space-y-2">
+      {leadership.map((r) => (
+        <li class={item}>
+          {lower(r.role)} @{lower(r.org)}
+          <span class="text-faint">{dates(r.start, r.end)}</span>
+        </li>
+      ))}
+    </ul>
+
+    <h2 class="mt-8">Interests:</h2>
+    <ul class="mt-2">
+      <li class={item}>{lower(site.interests.join(", "))}</li>
+    </ul>
+    <p class="mt-6">{site.beyondCode}</p>
+
+    <h2 class="mt-8">Locations:</h2>
+    <ul class="mt-2 space-y-2">
+      {site.locations.map((l) => (
+        <li class={item}>
+          {lower(l.place)}
+          <span class="text-faint" data-time-zone={l.timeZone}></span>
+        </li>
+      ))}
+    </ul>
+
+    <div id="contact" class="mt-8">
+      <p>{site.contactNote}</p>
+      <p class="mt-3">
+        <a href={site.linkedin} target="_blank" rel="noreferrer" class={link}>linkedin</a>
+        <span class="mx-2 text-faint">x</span>
+        <a href={site.github} target="_blank" rel="noreferrer" class={link}>github</a>
+      </p>
+      <p class="mt-1 flex flex-wrap gap-x-4">
+        <a href={`mailto:${site.email}`} class={link}>{site.email}</a>
+        <a href={`mailto:${site.personalEmail}`} class={link}>{site.personalEmail}</a>
+        <a href="/resume.pdf" target="_blank" rel="noreferrer" class={link}>resume</a>
       </p>
     </div>
   </section>
 
-  <section class="mx-auto max-w-5xl px-6 py-16">
-    <div class="mb-8 flex items-end justify-between">
-      <h2 class="text-sm font-semibold uppercase tracking-widest text-accent">Featured Projects</h2>
-      <a href="/projects" class="text-sm font-medium text-slate-400 hover:text-white">View all &rarr;</a>
-    </div>
-    <div class="grid gap-6 sm:grid-cols-2">
-      {featured.map((project) => (
-        <div class="rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-colors hover:border-accent/40 hover:bg-white/[0.04]">
-          <div class="flex items-start justify-between gap-4">
-            <h3 class="text-lg font-semibold text-white">{project.title}</h3>
-            {project.status && (
-              <span class="shrink-0 text-xs font-medium text-slate-500">{project.status}</span>
+  <div class="mx-auto max-w-[680px] px-5">
+    <hr class="mt-16 border-line" />
+  </div>
+
+  <section id="work" class="mx-auto max-w-[680px] px-5 pt-16">
+    <h2>Work:</h2>
+    <p class="text-muted">{lower(site.workIntro)}</p>
+  </section>
+
+  <div class="mx-auto mt-8 grid max-w-[920px] gap-x-5 gap-y-10 px-5 sm:grid-cols-2 lg:grid-cols-3">
+    {projects.map((p) => {
+      const name = p.title.split(" (")[0];
+      return (
+        <article class="group">
+          <div class="aspect-[4/3] overflow-hidden rounded-2xl bg-panel px-5 pt-6">
+            {p.image ? (
+              <div class="h-full overflow-hidden rounded-t-xl bg-well">
+                {/* Grayscale to match the site; the colour comes back on hover. */}
+                <img
+                  src={p.image}
+                  alt={p.imageAlt ?? `${name} screenshot`}
+                  loading="lazy"
+                  decoding="async"
+                  class="h-full w-full object-cover object-left-top grayscale transition duration-300 group-hover:grayscale-0"
+                />
+              </div>
+            ) : (
+              <div class="flex h-full items-end rounded-t-xl bg-well p-4">
+                <span class="text-2xl leading-tight text-line">{lower(name)}</span>
+              </div>
             )}
           </div>
-          <p class="mt-2 text-sm leading-relaxed text-slate-400">{project.description}</p>
-          <div class="mt-4 flex flex-wrap gap-2">
-            {project.tags.map((tag) => (
-              <span class="rounded-full border border-white/10 px-2.5 py-1 text-xs text-slate-400">{tag}</span>
-            ))}
+          <div class="mt-3 flex items-baseline justify-between gap-3">
+            <h3 class="text-ink">{lower(name)}</h3>
+            <span class="flex shrink-0 gap-3 text-xs">
+              {p.repo && <a href={p.repo} target="_blank" rel="noreferrer" class={link}>code ↗</a>}
+              {p.demo && <a href={p.demo} target="_blank" rel="noreferrer" class={link}>demo ↗</a>}
+              {p.href && <a href={p.href} target="_blank" rel="noreferrer" class={link}>live ↗</a>}
+            </span>
           </div>
-          {(project.repo || project.demo || project.href) && (
-            <div class="mt-5 flex gap-4 text-sm font-medium">
-              {project.repo && (
-                <a href={project.repo} target="_blank" rel="noreferrer" class="text-accent hover:underline">
-                  Code &rarr;
-                </a>
-              )}
-              {project.demo && (
-                <a href={project.demo} target="_blank" rel="noreferrer" class="text-accent hover:underline">
-                  Watch Demo &rarr;
-                </a>
-              )}
-              {project.href && (
-                <a href={project.href} target="_blank" rel="noreferrer" class="text-accent hover:underline">
-                  Live &rarr;
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section class="border-t border-white/10 bg-white/[0.02]">
-    <div class="mx-auto max-w-5xl px-6 py-16">
-      <h2 class="text-sm font-semibold uppercase tracking-widest text-accent">Skills</h2>
-      <div class="mt-6 space-y-5">
-        {Object.entries(site.skills).map(([category, items]) => (
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-4">
-            <span class="w-56 shrink-0 text-sm font-medium text-slate-400">{category}</span>
-            <div class="flex flex-wrap gap-2">
-              {items.map((item) => (
-                <span class="rounded-full border border-white/10 px-2.5 py-1 text-xs text-slate-300">{item}</span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-5xl px-6 py-16">
-    <h2 class="text-sm font-semibold uppercase tracking-widest text-accent">Beyond the Code</h2>
-    <p class="mt-4 max-w-3xl text-lg leading-relaxed text-slate-300">
-      {site.beyondCode}
-    </p>
-    <div class="mt-5 flex flex-wrap gap-2">
-      {site.interests.map((interest) => (
-        <span class="rounded-full border border-white/10 px-3 py-1.5 text-sm text-slate-300">{interest}</span>
-      ))}
-    </div>
-  </section>
+          <p class="mt-1 line-clamp-4 text-xs leading-relaxed text-muted">{p.description}</p>
+          {p.status && <p class="mt-1 text-xs text-faint">{lower(p.status)}</p>}
+        </article>
+      );
+    })}
+  </div>
 </Layout>
+
+<script>
+  // Each location's current local time, refreshed often enough to turn over with the minute.
+  const clocks = [...document.querySelectorAll<HTMLElement>("[data-time-zone]")];
+  function tick() {
+    const now = new Date();
+    for (const clock of clocks) {
+      const time = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: clock.dataset.timeZone,
+      }).format(now);
+      clock.textContent = ` · ${time.toLowerCase()}`;
+    }
+  }
+  tick();
+  setInterval(tick, 15_000);
+</script>

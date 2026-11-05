@@ -7,16 +7,22 @@ export interface Project {
   demo?: string;
   featured?: boolean;
   status?: string;
+  /** A screenshot under public/, shown on the project's card. */
+  image?: string;
+  imageAlt?: string;
 }
 
 export const projects: Project[] = [
   {
     title: "garet.ai (AI Study Buddy)",
     description:
-      "Senior thesis project: an AI study companion that recommends compatible study partners through a hybrid recommender over course data, stated preferences, behavioral signals, and schedule availability. Uses embeddings, similarity metrics, and constraint-aware scheduling to rank candidate matches, evaluated on precision, recall, and F1 against a profile-based baseline. Also adds Q&A, plain-language topic explanation, and study planning with reminders.",
-    tags: ["React", "Node.js", "Firebase", "Python"],
+      "Senior thesis project: an AI study partner that works from a student's own lecture notes. It splits a lecture into topics, writes practice quizzes with an explanation for every answer, answers questions with citations to the exact passage, and tracks mastery per topic after every answer. Weak topics get focused practice and more sessions in a spaced study plan. React and TypeScript front end, a Node.js/Express API, and a Python FastAPI service on the Claude API, with Firebase Authentication.",
+    tags: ["React", "TypeScript", "Node.js", "Express", "Python", "FastAPI", "Claude API", "Firebase"],
     status: "In Progress · Aug. 2026 – Present",
     featured: true,
+    image: "/projects/garet-ai.jpg",
+    imageAlt:
+      "garet.ai quiz screen: a question written from a recursion lecture, the correct answer highlighted, and the explanation below it",
   },
   {
     title: "FeedPlanner",

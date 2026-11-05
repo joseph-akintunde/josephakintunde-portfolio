@@ -1,13 +1,40 @@
 @import "tailwindcss";
 
+/* `light:` styles apply only in light mode, e.g. `light:hidden`. */
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
 @theme {
   --font-sans: "Consolas", "Menlo", "DejaVu Sans Mono", "Liberation Mono", ui-monospace, SFMono-Regular, monospace;
   --font-mono: "Consolas", "Menlo", "DejaVu Sans Mono", "Liberation Mono", ui-monospace, SFMono-Regular, monospace;
-  --color-accent: #2dd4bf;
-  --color-accent-2: #818cf8;
+
+  /* The whole palette: black and white with grays between. Every colour on the site uses these
+     names, so changing them here changes the theme everywhere. These are dark mode, the default;
+     light mode swaps in the values below. */
+  --color-page: #000000; /* background */
+  --color-ink: #ffffff; /* name, headings, links */
+  --color-body: #e5e5e5; /* running text */
+  --color-muted: #a3a3a3; /* tagline, descriptions */
+  --color-faint: #737373; /* dates, bullets, separators, link underlines */
+  --color-line: #262626; /* rules, the faint titles inside cards */
+  --color-panel: #171717; /* card frames, the current menu item */
+  --color-well: #0a0a0a; /* the window inside each card */
+}
+
+/* Light mode, chosen with the toggle in the menu and remembered in the visitor's browser. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-page: #fafafa;
+  --color-ink: #0a0a0a;
+  --color-body: #262626;
+  --color-muted: #737373;
+  --color-faint: #a3a3a3;
+  --color-line: #e5e5e5;
+  --color-panel: #ebebeb;
+  --color-well: #ffffff;
 }
 
 html {
+  color-scheme: dark;
   scroll-behavior: smooth;
 }
 

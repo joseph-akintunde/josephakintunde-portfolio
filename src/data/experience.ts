@@ -17,6 +17,9 @@ export const education = {
   honors: "Dean's List, Honors Scholar",
 };
 
+/** Offers accepted and not started yet, listed first. */
+export const incoming = [{ role: "Software Engineer", org: "Facebook" }];
+
 export const experience: ExperienceEntry[] = [
   {
     role: "Software Engineering Intern, Monetization & AI-Enhanced Ads",
@@ -32,7 +35,7 @@ export const experience: ExperienceEntry[] = [
     ],
   },
   {
-    role: "Software Engineering Intern, Meta University",
+    role: "Software Engineering Intern, Instagram Core Ads",
     org: "Meta",
     start: "June 2025",
     end: "August 2025",

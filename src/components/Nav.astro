@@ -1,50 +1,63 @@
 ---
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/projects", label: "Projects" },
-  { href: "/experience", label: "Experience" },
-  { href: "/resume", label: "Resume" },
-  { href: "/contact", label: "Contact" },
+// The page's sections as a small table of contents: down the right edge on wide screens, across
+// the top on narrow ones. The section in view is highlighted as you scroll.
+const sections = [
+  { id: "tldr", label: "TL;DR" },
+  { id: "work", label: "Work" },
 ];
-const path = Astro.url.pathname;
-const isActive = (href: string) => path === href || (href !== "/" && path.startsWith(href));
+const item = "rounded-md px-2.5 py-1 text-faint transition-colors hover:text-ink";
 ---
 
-<header class="sticky top-0 z-50 border-b border-white/10 bg-[#0b0d12]/80 backdrop-blur">
-  <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-    <a href="/" class="text-lg font-semibold tracking-tight text-white">
-      Joseph<span class="text-accent">.</span>
+<nav
+  aria-label="Sections"
+  class="mx-auto flex max-w-[680px] flex-wrap gap-1 px-2.5 pt-8 text-xs lg:fixed lg:top-1/2 lg:right-6 lg:z-10 lg:-translate-y-1/2 lg:flex-col lg:items-end lg:p-0"
+>
+  {sections.map((s, i) => (
+    <a
+      href={`/#${s.id}`}
+      data-section={s.id}
+      aria-current={i === 0 ? "true" : "false"}
+      class={`${item} aria-[current=true]:bg-panel aria-[current=true]:text-ink`}
+    >
+      {s.label}
     </a>
+  ))}
+  <a href="/resume.pdf" target="_blank" rel="noreferrer" class={item}>Resume ↗</a>
+  <button type="button" id="theme-toggle" class={`${item} cursor-pointer`}>
+    <span class="light:hidden">Light mode</span><span class="hidden light:inline">Dark mode</span>
+  </button>
+</nav>
 
-    <ul class="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
-      {links.map((link) => (
-        <li>
-          <a
-            href={link.href}
-            class:list={["transition-colors hover:text-white", isActive(link.href) && "text-white"]}
-          >
-            {link.label}
-          </a>
-        </li>
-      ))}
-    </ul>
+<script>
+  const links = [...document.querySelectorAll<HTMLAnchorElement>("a[data-section]")];
+  const sections = links
+    .map((a) => document.getElementById(a.dataset.section ?? ""))
+    .filter((s): s is HTMLElement => s !== null);
 
-    <details class="relative md:hidden">
-      <summary class="list-none cursor-pointer rounded-md border border-white/10 px-3 py-2 text-sm text-slate-200">
-        Menu
-      </summary>
-      <ul class="absolute right-0 mt-2 w-44 rounded-lg border border-white/10 bg-[#11141b] p-2 shadow-xl">
-        {links.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              class="block rounded-md px-3 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white"
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </details>
-  </nav>
-</header>
+  // The current section is the last one whose top has passed 40% of the window, or the last
+  // section once the page is scrolled to the bottom.
+  function update() {
+    let current = sections[0]?.id;
+    for (const s of sections) if (s.getBoundingClientRect().top <= innerHeight * 0.4) current = s.id;
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) current = sections.at(-1)?.id;
+    for (const a of links) a.setAttribute("aria-current", String(a.dataset.section === current));
+  }
+  addEventListener("scroll", update, { passive: true });
+  update();
+
+  // Light/dark toggle. Dark is the default; a choice is remembered in this browser, and Layout
+  // applies it before the page is drawn.
+  document.getElementById("theme-toggle")?.addEventListener("click", () => {
+    const root = document.documentElement;
+    const light = root.dataset.theme !== "light";
+    if (light) root.dataset.theme = "light";
+    else delete root.dataset.theme;
+    const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (themeColor) themeColor.content = light ? "#fafafa" : "#000000";
+    try {
+      localStorage.setItem("theme", light ? "light" : "dark");
+    } catch {
+      // Storage can be blocked (private browsing); the toggle still works for this visit.
+    }
+  });
+</script>
