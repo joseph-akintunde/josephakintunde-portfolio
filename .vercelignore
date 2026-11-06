@@ -1,0 +1,7 @@
+# Files `vercel` never uploads when deploying from this folder. Vercel builds the site itself, so it
+# needs only the source; local secrets (.env.local holds the Redis keys) must stay on this machine.
+.env*
+index.py
+node_modules
+dist
+.astro

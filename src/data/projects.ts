@@ -33,6 +33,8 @@ export const projects: Project[] = [
     demo: "https://www.loom.com/share/4b264830c7e04807bd28383be4bdc393",
     status: "June 2025 – August 2025",
     featured: true,
+    image: "/projects/feedplanner.jpg",
+    imageAlt: "FeedPlanner's Discover Recipes page, analyzing the pantry to recommend recipes",
   },
   {
     title: "AI Plan Assistance Chatbot",

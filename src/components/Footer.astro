@@ -1,30 +1,112 @@
 ---
 import { site } from "../data/site";
 const year = new Date().getFullYear();
+// The dotted map's bounds, matching public/world-dots.svg: x = longitude + 180, y = 80 − latitude.
+const map = { north: 80, south: -58 };
 ---
 
 <footer class="mx-auto max-w-[680px] px-5 pt-20 pb-12 text-xs text-faint">
+  <div id="last-visitor" class="mb-8 max-w-[440px]" hidden>
+    <div id="visitor-map" class="relative" hidden>
+      <!-- The map is one button: clicking it shows when and where the last visitor was. -->
+      <button
+        id="visitor-button"
+        type="button"
+        class="group relative block aspect-[360/138] w-full cursor-pointer"
+        aria-expanded="false"
+        aria-controls="visitor-details"
+        aria-label="When and where the last visitor was"
+      >
+        <span
+          class="absolute inset-0 bg-faint/50 transition-colors group-hover:bg-faint/70"
+          style="mask: url(/world-dots.svg) center / 100% 100% no-repeat; -webkit-mask: url(/world-dots.svg) center / 100% 100% no-repeat;"
+        ></span>
+        <span id="visitor-pin" class="absolute size-2 -translate-x-1/2 -translate-y-1/2">
+          <span class="absolute inset-0 rounded-full bg-ink opacity-60 motion-safe:animate-ping"></span>
+          <span class="absolute inset-0 rounded-full bg-ink transition-transform group-hover:scale-150"></span>
+        </span>
+      </button>
+      <!-- Outside the button so screen readers can read it; announced when it appears. -->
+      <p
+        id="visitor-details"
+        role="status"
+        class="absolute z-10 w-max max-w-full rounded-md bg-ink px-2.5 py-1.5 text-page shadow-lg"
+        hidden
+      >
+      </p>
+    </div>
+    <p class="mt-3">{"last visitor from "}<span id="visitor-place"></span></p>
+  </div>
   <p>&copy; {year} {site.name.toLowerCase()}</p>
-  <p id="last-visitor" class="mt-1" hidden>last visitor from <span></span></p>
 </footer>
 
-<script>
-  // "Last visitor from …" (src/pages/api/visit.ts). Stays hidden when there is no previous visitor,
-  // or when no storage is connected.
-  type Place = { city: string; region: string; country: string };
-  const line = document.getElementById("last-visitor");
+<script define:vars={{ map }}>
+  // "Last visitor from …" (src/pages/api/visit.ts), with a dot on the map where they were. Stays
+  // hidden when there is no previous visitor, or when no storage is connected.
   fetch("/api/visit", { method: "POST" })
-    .then((response) => (response.ok ? (response.json() as Promise<{ last: Place | null }>) : null))
+    .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
       const last = data?.last;
-      if (!line || !last?.city) return;
+      if (!last?.city) return;
       // "houston, tx" in the US; "lagos, nigeria" elsewhere.
       const rest =
         last.country && last.country !== "US"
           ? new Intl.DisplayNames(["en"], { type: "region" }).of(last.country)
           : last.region;
-      line.querySelector("span")!.textContent = [last.city, rest].filter(Boolean).join(", ").toLowerCase();
-      line.hidden = false;
+      const place = [last.city, rest].filter(Boolean).join(", ").toLowerCase();
+      document.getElementById("visitor-place").textContent = place;
+      document.getElementById("last-visitor").hidden = false;
+      if (typeof last.lat === "number" && typeof last.lon === "number") showOnMap(last, place);
     })
     .catch(() => {});
+
+  function showOnMap(last, place) {
+    const button = document.getElementById("visitor-button");
+    const pin = document.getElementById("visitor-pin");
+    const details = document.getElementById("visitor-details");
+    const x = ((last.lon + 180) / 360) * 100;
+    const y = ((map.north - Math.min(map.north, Math.max(map.south, last.lat))) / (map.north - map.south)) * 100;
+    pin.style.left = `${x}%`;
+    pin.style.top = `${y}%`;
+
+    // Centred above the dot (below it when there's no room above), and never past the map's edges.
+    const position = () => {
+      const map = button.getBoundingClientRect();
+      const dotX = (x / 100) * map.width;
+      const dotY = (y / 100) * map.height;
+      const width = details.offsetWidth;
+      const height = details.offsetHeight;
+      const gap = 12;
+      details.style.left = `${Math.min(Math.max(dotX - width / 2, 0), map.width - width)}px`;
+      details.style.top = `${dotY - height - gap >= 0 ? dotY - height - gap : dotY + gap}px`;
+    };
+    const open = (show) => {
+      details.hidden = !show;
+      if (show) {
+        details.textContent = `last visitor ${ago(last.at)}from ${place}`;
+        position();
+      }
+      button.setAttribute("aria-expanded", String(show));
+    };
+    addEventListener("resize", () => details.hidden || position());
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      open(details.hidden);
+    });
+    document.addEventListener("click", () => open(false));
+    document.addEventListener("keydown", (event) => event.key === "Escape" && open(false));
+    document.getElementById("visitor-map").hidden = false;
+  }
+
+  /** "12 mins ago " (with its trailing space), or nothing for a visit saved before times were kept. */
+  function ago(at) {
+    if (typeof at !== "number") return "";
+    const minutes = Math.floor((Date.now() - at) / 60000);
+    if (minutes < 1) return "a moment ago ";
+    if (minutes < 60) return `${minutes} min${minutes === 1 ? "" : "s"} ago `;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago `;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days === 1 ? "" : "s"} ago `;
+  }
 </script>

@@ -14,7 +14,7 @@ export const site = {
 
   beyondCode:
     "Outside of engineering, I'm a big sports fan, soccer especially. I play regularly, not just watch, and I love the same things on the pitch that I love in engineering: reading the game, working with a team, and getting better through reps.",
-  interests: ["Soccer", "Basketball", "Football", "F1", "Tennis", "Ping Pong"],
+  interests: ["Soccer", "Basketball", "Football", "F1", "Tennis", "Ping Pong", "Photography"],
 
   /** Where I spend my time, each shown with its current local time. */
   locations: [

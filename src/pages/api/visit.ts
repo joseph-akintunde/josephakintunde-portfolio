@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
 
 // "Last visitor from …": swaps the previous visitor's approximate location for this visitor's and
-// returns the previous one. The location is the city, region and country that Vercel derives from
-// the visitor's IP address. Only those three are stored, and each visit overwrites the last: no IP
-// address, no time, nothing that identifies anyone.
+// returns the previous one. The location is what Vercel derives from the visitor's IP address: city,
+// region, country, and coordinates for the map, rounded to 0.1° (about 10 km) so they say no more
+// than the city does. The time of the visit is kept too, for "12 mins ago". Nothing else is stored,
+// and each visit overwrites the last: no IP address, nothing that identifies anyone.
 //
 // Storage is a Redis database connected to the Vercel project (Storage → Upstash for Redis), which
 // adds the KV_REST_API_* variables. Without it the endpoint answers {last: null} and the page shows
@@ -13,7 +14,8 @@ export const prerender = false;
 const KEY = "last-visitor";
 const BOT = /bot|crawl|spider|slurp|preview|monitor|headless|lighthouse/i;
 
-type Place = { city: string; region: string; country: string };
+/** `at` is when the visit happened, in milliseconds since 1970. */
+type Place = { city: string; region: string; country: string; lat?: number; lon?: number; at?: number };
 
 export const POST: APIRoute = async ({ request }) => {
   const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
@@ -22,9 +24,17 @@ export const POST: APIRoute = async ({ request }) => {
 
   const headers = request.headers;
   const city = decode(headers.get("x-vercel-ip-city"));
+  const lat = coordinate(headers.get("x-vercel-ip-latitude"), 90);
+  const lon = coordinate(headers.get("x-vercel-ip-longitude"), 180);
   const here: Place | null =
     city && !BOT.test(headers.get("user-agent") ?? "")
-      ? { city, region: headers.get("x-vercel-ip-country-region") ?? "", country: headers.get("x-vercel-ip-country") ?? "" }
+      ? {
+          city,
+          region: headers.get("x-vercel-ip-country-region") ?? "",
+          country: headers.get("x-vercel-ip-country") ?? "",
+          ...(lat !== null && lon !== null ? { lat, lon } : {}),
+          at: Date.now(),
+        }
       : null;
 
   try {
@@ -48,6 +58,12 @@ function answer(last: Place | null) {
   return new Response(JSON.stringify({ last }), {
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
+}
+
+/** A latitude or longitude from Vercel, rounded to 0.1°; null when missing or out of range. */
+function coordinate(value: string | null, limit: number): number | null {
+  const degrees = Number(value);
+  return value && Number.isFinite(degrees) && Math.abs(degrees) <= limit ? Math.round(degrees * 10) / 10 : null;
 }
 
 /** Vercel URL-encodes the city ("San%20Francisco"). */
